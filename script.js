@@ -1,3 +1,5 @@
+let n = 0;
+
 function addNewList() {
   let verticalNav = document.getElementById("collapsibleNavbar");
   let verticalNavContent = document.getElementById("v-pills-tabContent");
@@ -31,14 +33,16 @@ function addNewList() {
   verticalNavContent.appendChild(contentElement);
   //add actual page
   let pageElements = `<div class="heading">
-        <h3>${listName}</h3>
+        <h3>${addList}</h3>
         <button class="btn" id="addListItem"><i class="fas fa-plus-circle" onclick="addListItems()"></i></button>
       </div>
-      <ul>
-      </ul>`;
+<!--      fixME-->
+      <ul id="ul">
+      </ul>
+<button class="btn btn-info" onclick="deleteChecked()">Clear checked</button>`;
   contentElement.insertAdjacentHTML("afterbegin", pageElements);
 
-  document.getElementById("addList").value="";
+  document.getElementById("addList").value = "";
   deleteElements();
 }
 
@@ -54,28 +58,54 @@ function deleteElements() {
   }
 }
 
-// function addListItems() {
-//   let listItem = `<li>
-//           <div class="input-group mb-3">
-//             <div class="input-group-prepend">
-//               <div class="input-group-text checkbox-circle">
-//                 <input type="checkbox" id="checkbox">
-//                 <label for="checkbox"></label>
-//               </div>
-//             </div>
-//             <input type="text" class="form-control">
-//             <button type="button" class="close" aria-label="Close" id="closeListItem">
-//               <span aria-hidden="true" class="">&times</span>
-//             </button>
-//           </div>
-//         </li>`;
-//   let ul = this.parentElement.nextSibling;
-//   ul.insertAdjacentHTML("beforeend", listItem);
-//   console.log("done")
-// }
+function addListItems() {
+  n++;
+  let listItem = `<li>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <div class="input-group-text checkbox-circle">
+                <input type="checkbox" id="checkbox${n}">
+                <label for="checkbox${n}"></label>
+              </div>
+            </div>
+            <input type="text" class="form-control">
+            <button type="button" class="close" aria-label="Close" id="closeListItem">
+              <span aria-hidden="true" class="">&times</span>
+            </button>
+          </div>
+        </li>`;
+  // let ul = this.parentElement.nextSibling;
+  let ul = document.getElementById("ul")
+  ul.insertAdjacentHTML("beforeend", listItem);
+  deleteListItems()
+}
+
+function deleteListItems() {
+  let closeBtns = document.getElementsByClassName("close");
+
+  for (let i = 0; i < closeBtns.length; i++) {
+    closeBtns[i].addEventListener("click", function () {
+      this.parentElement.style.display = 'none';
+    });
+  }
+}
+
+
+function deleteChecked() {
+  let checkboxes = document.querySelectorAll("input[type=checkbox]");
+  let checked = document.querySelectorAll("input[type=checkbox]:checked");
+  if (checked) {
+    // checkboxes.style.display = 'none';
+    for (let i = 0; i < checked.length; i++) {
+      checked[i].parentElement.parentElement.parentElement.parentElement.style.display = 'none';
+    }
+    console.log(checked)
+  }
+}
+
 
 document.getElementById("addList")
-  .addEventListener("keyup", function(event) {
+  .addEventListener("keyup", function (event) {
     event.preventDefault();
     if (event.keyCode === 13) {
       document.getElementById("addListButton").click();
