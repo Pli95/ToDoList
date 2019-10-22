@@ -42,7 +42,8 @@ function addNewList() {
 }
 
 function printList(el) {
-  let tab = `<a class="nav-link" data-toggle="tab" href=#${el.title} role="tab"
+  let noSpace = el.title.replace(/\s+/g, '');
+  let tab = `<a class="nav-link" data-toggle="tab" href=#${noSpace} role="tab"
        aria-selected="false" onclick="changeList('${el.title}')">
       <span>${el.title}</span>
       <button type="button" class="close" aria-label="Close" id="close" onclick="deleteList(this, '${el.title}')">
@@ -50,7 +51,7 @@ function printList(el) {
       </button>
     </a>`
   $("#collapsibleNavbar").append(tab)
-  let content = `<div class="tab-pane fade" role="tabpanel" id="${el.title}">
+  let content = `<div class="tab-pane fade" role="tabpanel" id="${noSpace}">
       <div class="heading">
         <h3>${el.title}</h3>
         <button class="btn" id="addListItem"><i class="fas fa-plus-circle" onclick="addListItems('${el.title}')"></i></button>
@@ -63,11 +64,12 @@ function printList(el) {
 };
 
 function deleteList(el, page) {
+  let noSpace = page.replace(/\s+/g, '');
   $(el).parent().fadeOut(function () {
     $(el).parent().remove();
     localStorage.removeItem("listNames")
   });
-  $("#" + page).remove();
+  $("#" + noSpace).remove();
 }
 
 function addListItems(el) {
@@ -80,6 +82,7 @@ function addListItems(el) {
 }
 
 function printTask(el, val) {
+  let noSpace = el.replace(/\s+/g, '');
   if (val == undefined) {
     val = ""
   }
@@ -98,7 +101,7 @@ function printTask(el, val) {
             </button>
           </div>
         </li>`;
-  $("#" + el + " ul").append(content);
+  $("#" + noSpace + " ul").append(content);
 }
 
 function deleteListItems(el) {
@@ -145,7 +148,7 @@ function retrieveList() {
     return null;
   } else {
     allLists.forEach(i => {
-      let list = i.title;
+      lists.push(i);
       let allTasks = i.tasks;
       selectedList = i;
       printList(i);
