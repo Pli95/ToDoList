@@ -43,7 +43,7 @@ function addNewList() {
 
 function printList(el) {
   let tab = `<a class="nav-link" data-toggle="tab" href=#${el.title} role="tab"
-       aria-selected="false">
+       aria-selected="false" onclick="changeList('${el.title}')">
       <span>${el.title}</span>
       <button type="button" class="close" aria-label="Close" id="close" onclick="deleteList(this, '${el.title}')">
         <span aria-hidden="true">&times</span>
@@ -79,7 +79,10 @@ function addListItems(el) {
 
 }
 
-function printTask(el) {
+function printTask(el, val) {
+  if (val == undefined) {
+    val = ""
+  }
   n++
   let content = `<li>
           <div class="input-group mb-3">
@@ -89,7 +92,7 @@ function printTask(el) {
                 <label for="checkbox${n}"></label>
               </div>
             </div>
-            <input type="text" class="form-control" onblur="storeTask(this)">
+            <input type="text" class="form-control" onblur="storeTask(this)" value="${val}">
             <button type="button" class="close" aria-label="Close" id="closeListItem" onclick="deleteListItems(this)">
               <span aria-hidden="true" class="">&times</span>
             </button>
@@ -104,7 +107,7 @@ function deleteListItems(el) {
     right: "-=100"
   }, 600, function () {
     $(el).parent().remove();
-    console.log(selectedList)
+    localStorage.removeItem("listNames");
   });
 }
 
@@ -122,6 +125,13 @@ function deleteChecked(el) {
   }
 }
 
+function changeList(el) {
+  for (let i =0; i < lists.length; i++) {
+    if (lists[i].title == el) {
+      selectedList = lists[i]
+    }
+  }
+}
 
 
 function storeList() {
@@ -135,21 +145,13 @@ function retrieveList() {
     return null;
   } else {
     allLists.forEach(i => {
-      let list = new List(i.title);
+      let list = i.title;
       let allTasks = i.tasks;
-      selectedList = list;
-      printList(list);
+      selectedList = i;
+      printList(i);
       allTasks.forEach(j => {
-        console.log(list.title)
-        printTask(list.title)
-      //   let newTask = new Task(i.text)
-      //   list.addTask(newTask)
-      //   printTask()
-      //   let allTasks = allLists[i].tasks
-      //   allTasks.forEach(j => {
-      //     printTask()
-      //   })
-
+        console.log(i)
+        printTask(i.title, j.text)
       })
     })
   }
@@ -157,6 +159,6 @@ function retrieveList() {
 }
 
 function storeTask(el){
-  selectedList.addTask($(el).val());
+  selectedList.tasks[0].text= $(el).val()
   storeList();
 };
