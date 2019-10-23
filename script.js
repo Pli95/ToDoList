@@ -18,7 +18,7 @@ class Task {
 let lists = [];
 let selectedList;
 let n = 0;
-let CURRENT_LIST_KEY = "";
+let num = -1
 
 retrieveList();
 
@@ -67,22 +67,28 @@ function deleteList(el, page) {
   let noSpace = page.replace(/\s+/g, '');
   $(el).parent().fadeOut(function () {
     $(el).parent().remove();
-    localStorage.removeItem("listNames")
+    for (let i =0; i < lists.length; i++) {
+      if (lists[i].title == page) {
+        localStorage.removeItem("listNames")
+      }
+    }
   });
   $("#" + noSpace).remove();
 }
 
 function addListItems(el) {
   let newTask = new Task("task" + n);
-  n++;
+  let taskName = "task" + n
+  // n++;
   selectedList.addTask(newTask);
-  printTask(el);
+  printTask(el, null, taskName);
   storeList()
 
 }
 
-function printTask(el, val) {
+function printTask(el, val, taskName) {
   let noSpace = el.replace(/\s+/g, '');
+  num++
   if (val == undefined) {
     val = ""
   }
@@ -95,13 +101,14 @@ function printTask(el, val) {
                 <label for="checkbox${n}"></label>
               </div>
             </div>
-            <input type="text" class="form-control" onblur="storeTask(this)" value="${val}">
+            <input type="text" class="form-control" onblur="storeTask('${taskName}')" value="${val}" id = ${taskName}>
             <button type="button" class="close" aria-label="Close" id="closeListItem" onclick="deleteListItems(this)">
               <span aria-hidden="true" class="">&times</span>
             </button>
           </div>
         </li>`;
   $("#" + noSpace + " ul").append(content);
+
 }
 
 function deleteListItems(el) {
@@ -154,7 +161,7 @@ function retrieveList() {
       printList(i);
       allTasks.forEach(j => {
         console.log(i)
-        printTask(i.title, j.text)
+        printTask(i.title, j.text, j.text)
       })
     })
   }
@@ -162,6 +169,12 @@ function retrieveList() {
 }
 
 function storeTask(el){
-  selectedList.tasks[0].text= $(el).val()
+  console.log(el)
+  for (let i = 0; i < selectedList.tasks.length; i++) {
+    if (selectedList.tasks[i].text == el) {
+      console.log(selectedList.tasks[i].text)
+      selectedList.tasks[i].text= $("#" + el).val()
+    }
+  }
   storeList();
 };
