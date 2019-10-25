@@ -7,6 +7,14 @@ class List {
   addTask(tasks) {
     this.tasks.push(tasks)
   }
+
+  static createList(object) {
+    let list = new List(object.title)
+    for(let i = 0; i < object.tasks.length; i++) {
+      list.tasks[i] = new Task(object.tasks[i].text);
+    }
+    return list;
+  }
 }
 
 class Task {
@@ -18,7 +26,7 @@ class Task {
 let lists = [];
 let selectedList;
 let n = 0;
-let num = -1
+let num = -1;
 
 retrieveList();
 
@@ -49,7 +57,7 @@ function printList(el) {
       <button type="button" class="close" aria-label="Close" id="close" onclick="deleteList(this, '${el.title}')">
         <span aria-hidden="true">&times</span>
       </button>
-    </a>`
+    </a>`;
   $("#collapsibleNavbar").append(tab)
   let content = `<div class="tab-pane fade" role="tabpanel" id="${noSpace}">
       <div class="heading">
@@ -58,18 +66,20 @@ function printList(el) {
       </div>
       <ul id="ul"></ul>
       <button class="btn btn-info" onclick="deleteChecked(this)">Clear checked</button>
-    </div>`
+    </div>`;
   $("#v-pills-tabContent").append(content);
   $("#addList").val("");
-};
+}
 
 function deleteList(el, page) {
   let noSpace = page.replace(/\s+/g, '');
   $(el).parent().fadeOut(function () {
     $(el).parent().remove();
     for (let i =0; i < lists.length; i++) {
-      if (lists[i].title == page) {
-        localStorage.removeItem("listNames")
+      if (lists[i].title === page) {
+        localStorage.removeItem("listNames");
+        lists.splice(i, 1);
+        storeList()
       }
     }
   });
@@ -78,21 +88,21 @@ function deleteList(el, page) {
 
 function addListItems(el) {
   let newTask = new Task("task" + n);
-  let taskName = "task" + n
+  let taskName = "task" + n;
   // n++;
   selectedList.addTask(newTask);
-  printTask(el, null, taskName);
+  printTask(el, "", taskName);
   storeList()
 
 }
 
 function printTask(el, val, taskName) {
   let noSpace = el.replace(/\s+/g, '');
-  num++
-  if (val == undefined) {
+  num++;
+  if (val === undefined) {
     val = ""
   }
-  n++
+  n++;
   let content = `<li>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -101,8 +111,8 @@ function printTask(el, val, taskName) {
                 <label for="checkbox${n}"></label>
               </div>
             </div>
-            <input type="text" class="form-control" onblur="storeTask('${taskName}')" value="${val}" id = ${taskName}>
-            <button type="button" class="close" aria-label="Close" id="closeListItem" onclick="deleteListItems(this)">
+            <input type="text" class="form-control" onblur="storeTask('${taskName}', this)" value="${val}" id = ${taskName}>
+            <button type="button" class="close" aria-label="Close" id="closeListItem" onclick="deleteListItems(this, '${taskName}')">
               <span aria-hidden="true" class="">&times</span>
             </button>
           </div>
@@ -111,18 +121,29 @@ function printTask(el, val, taskName) {
 
 }
 
-function deleteListItems(el) {
+function deleteListItems(el, value) {
+  console.log(value)
   $(el).parent().animate({
     opacity: 0,
     right: "-=100"
   }, 600, function () {
     $(el).parent().remove();
-    localStorage.removeItem("listNames");
+    for (let i =0; i < lists.length; i++) {
+      for (let y = 0; y < lists[i].tasks.length; y++) {
+        console.log(lists[i].tasks[y])
+        if (lists[i].tasks[y].text === value) {
+          localStorage.removeItem("listNames")
+          lists[i].tasks.splice(y, 1);
+          storeTask()
+        }
+      }
+    }
   });
 }
 
 function deleteChecked(el) {
   let checked = $(el).siblings("ul").find("input:checked");
+  let value = $(checked).parentsUntil("li").children("input:text")
   if (checked) {
     for (let i = 0; i < checked.length; i++) {
       $(checked[i]).parentsUntil("li").animate({
@@ -130,6 +151,16 @@ function deleteChecked(el) {
         right: "-=100"
       }, 600, function () {
         $(checked[i]).parentsUntil("li").remove();
+        for (let x = 0; x < lists.length; x++) {
+          for (let y = 0; y < lists[x].tasks.length; y++) {
+            if (lists[x].tasks[y].text === value[i].id) {
+              console.log(value[i].id)
+              localStorage.removeItem("listNames")
+              lists[x].tasks.splice(y, 1);
+              storeTask()
+            }
+          }
+        }
       });
     }
   }
@@ -137,7 +168,7 @@ function deleteChecked(el) {
 
 function changeList(el) {
   for (let i =0; i < lists.length; i++) {
-    if (lists[i].title == el) {
+    if (lists[i].title === el) {
       selectedList = lists[i]
     }
   }
@@ -154,27 +185,31 @@ function retrieveList() {
   if (allLists == null) {
     return null;
   } else {
-    allLists.forEach(i => {
-      lists.push(i);
-      let allTasks = i.tasks;
-      selectedList = i;
-      printList(i);
-      allTasks.forEach(j => {
-        console.log(i)
-        printTask(i.title, j.text, j.text)
+    allLists.forEach(list => {
+      lists.push(List.createList(list));
+      let allTasks = list.tasks;
+      selectedList = List.createList(list);
+      printList(list);
+      allTasks.forEach(task => {
+        console.log(list);
+        printTask(list.title, task.text, task.text)
       })
     })
   }
 
 }
 
-function storeTask(el){
-  console.log(el)
+function storeTask(taskName, el){
+console.log(el)
+  let newName = $("#" + taskName).val()
+  console.log(newName)
   for (let i = 0; i < selectedList.tasks.length; i++) {
-    if (selectedList.tasks[i].text == el) {
-      console.log(selectedList.tasks[i].text)
-      selectedList.tasks[i].text= $("#" + el).val()
+    if (selectedList.tasks[i].text === taskName) {
+      selectedList.tasks[i].text= newName
     }
   }
   storeList();
-};
+  $(el).attr("id", $("#" + taskName).val());
+  $(el).attr("onblur", `storeTask('${newName}', this)`);
+  $(el).next().attr("onclick", `deleteListItems(this, '${newName}')`)
+}
